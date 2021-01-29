@@ -62,7 +62,7 @@ open class CustomMessageSizeCalculator: MessageSizeCalculator {
         let collectionViewWidth = layout.collectionView?.bounds.width ?? 0
         let contentInset = layout.collectionView?.contentInset ?? .zero
         let inset = layout.sectionInset.left + layout.sectionInset.right + contentInset.left + contentInset.right
-        return CGSize(width: collectionViewWidth - inset, height: 44)
+        return CGSize(width: collectionViewWidth - inset, height: 100)
     }
   
 }

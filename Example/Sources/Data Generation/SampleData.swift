@@ -202,7 +202,10 @@ final internal class SampleData {
         case .Phone:
             return MockMessage(text: "123-456-7890", user: user, messageId: uniqueID, date: date)
         case .Custom:
-            return MockMessage(custom: "Someone left the conversation", user: system, messageId: uniqueID, date: date)
+            let randomSentence = Lorem.sentence()
+            let attributedText = attributedString(with: randomSentence)
+            let message = MockMessage(attributedText: attributedText, user: user, messageId: uniqueID, date: date)
+            return MockMessage(custom: message, user: user, messageId: uniqueID, date: date)
         case .ShareContact:
             return MockMessage(contact: contactsToShare.random()!, user: user, messageId: uniqueID, date: date)
         }

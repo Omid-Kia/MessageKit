@@ -91,11 +91,10 @@ final class AutocompleteExampleViewController: ChatViewController {
 
         let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout
         layout?.sectionInset = UIEdgeInsets(top: 1, left: 8, bottom: 1, right: 8)
-        layout?.setMessageOutgoingCellBottomLabelAlignment(.init(textAlignment: .right, textInsets: .zero))
-        layout?.setMessageOutgoingAvatarSize(.zero)
-        layout?.setMessageOutgoingMessageTopLabelAlignment(LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 12)))
-        layout?.setMessageOutgoingMessageBottomLabelAlignment(LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 12)))
-
+        layout?.setMessageOutgoingAvatarSize(CGSize(width: 30, height: 30))
+        layout?.setMessageOutgoingCellBottomLabelAlignment(.init(textAlignment: .right, textInsets: UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)))
+        layout?.setMessageOutgoingMessagePadding(UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0))
+        layout?.setAvatarLeadingTrailingPadding(0)
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
 
@@ -116,8 +115,8 @@ final class AutocompleteExampleViewController: ChatViewController {
     private func configureMessageInputBarForChat() {
         messageInputBar.setMiddleContentView(messageInputBar.inputTextView, animated: false)
         messageInputBar.setRightStackViewWidthConstant(to: 52, animated: false)
-        let bottomItems = [makeButton(named: "ic_at"), makeButton(named: "ic_hashtag"), .flexibleSpace]
-        messageInputBar.setStackViewItems(bottomItems, forStack: .bottom, animated: false)
+//        let bottomItems = [makeButton(named: "ic_at"), makeButton(named: "ic_hashtag"), .flexibleSpace]
+//        messageInputBar.setStackViewItems(bottomItems, forStack: .bottom, animated: false)
 
         messageInputBar.sendButton.activityViewColor = .white
         messageInputBar.sendButton.backgroundColor = .primaryColor
@@ -329,7 +328,36 @@ extension AutocompleteExampleViewController: MessagesDisplayDelegate {
     }
 
     func messageStyle(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageStyle {
-        return .bubble
+        var corners: UIRectCorner = []
+        
+        if isFromCurrentSender(message: message) {
+            corners.formUnion(.topLeft)
+            corners.formUnion(.bottomLeft)
+            if !isPreviousMessageSameSender(at: indexPath) {
+                corners.formUnion(.topRight)
+            }
+            if !isNextMessageSameSender(at: indexPath) {
+                corners.formUnion(.bottomRight)
+            }
+        } else {
+            corners.formUnion(.topRight)
+            corners.formUnion(.bottomRight)
+            if !isPreviousMessageSameSender(at: indexPath) {
+                corners.formUnion(.topLeft)
+            }
+            if !isNextMessageSameSender(at: indexPath) {
+                corners.formUnion(.bottomLeft)
+            }
+        }
+        
+        return .custom { view in
+            let radius: CGFloat = 16
+            let path = UIBezierPath(roundedRect: view.bounds, byRoundingCorners: corners, cornerRadii: CGSize(width: radius, height: radius))
+            let mask = CAShapeLayer()
+            mask.path = path.cgPath
+            view.layer.mask = mask
+        }
+        
     }
 
     func configureAvatarView(_ avatarView: AvatarView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {

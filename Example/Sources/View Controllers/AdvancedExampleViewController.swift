@@ -418,7 +418,9 @@ extension AdvancedExampleViewController: MessagesDisplayDelegate {
 // MARK: - MessagesLayoutDelegate
 
 extension AdvancedExampleViewController: MessagesLayoutDelegate {
-
+//    func customCellSizeCalculator(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator {
+//        <#code#>
+//    }
     func cellTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CGFloat {
         if isTimeLabelVisible(at: indexPath) {
             return 18

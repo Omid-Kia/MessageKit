@@ -46,14 +46,14 @@ open class CustomCell: MessageContentCell {
     
     open override func setupSubviews() {
         super.setupSubviews()
-        contentView.addSubview(customView)
+        messageContainerView.addSubview(customView)
         NSLayoutConstraint.activate([
             customView.centerYAnchor.constraint(equalTo: centerYAnchor),
             customView.centerXAnchor.constraint(equalTo: centerXAnchor),
             customView.heightAnchor.constraint(equalToConstant: 40),
             customView.widthAnchor.constraint(equalToConstant: 40)
         ])
-        contentView.addSubview(messageLabel)
+        messageContainerView.addSubview(messageLabel)
         NSLayoutConstraint.activate([
             messageLabel.centerYAnchor.constraint(equalTo: centerYAnchor),
             messageLabel.centerXAnchor.constraint(equalTo: centerXAnchor),
@@ -79,9 +79,18 @@ open class CustomCell: MessageContentCell {
             messageLabel.frame = messageContainerView.bounds
         }
     }
-//    open override func layoutCellTopLabel(with attributes: MessagesCollectionViewLayoutAttributes) {
-//        super.layoutMessageTopLabel(with: )
-//    }
+    open override func layoutCellTopLabel(with attributes: MessagesCollectionViewLayoutAttributes) {
+        super.layoutMessageTopLabel(with: attributes)
+    }
+    
+    open override func layoutMessageContainerView(with attributes: MessagesCollectionViewLayoutAttributes) {
+        super.layoutMessageContainerView(with: attributes)
+    }
+    
+    open override func layoutAvatarView(with attributes: MessagesCollectionViewLayoutAttributes) {
+        super.layoutAvatarView(with: attributes)
+    }
+    
     open override func configure(with message: MessageType, at indexPath: IndexPath, and messagesCollectionView: MessagesCollectionView) {
         super.configure(with: message, at: indexPath, and: messagesCollectionView)
 
@@ -97,6 +106,15 @@ open class CustomCell: MessageContentCell {
             for detector in enabledDetectors {
                 let attributes = displayDelegate.detectorAttributes(for: detector, and: message, at: indexPath)
                 messageLabel.setAttributes(attributes, detector: detector)
+            }
+            let messageKind = message.kind
+            switch messageKind {
+            case .custom(let payload):
+                messageLabel.text = "custom message payload \((payload as? MockMessage)?.messageId)"
+                print("custom message payload", payload)
+                break
+            default:
+                break
             }
 //            let textMessageKind =
 //            switch textMessageKind {
