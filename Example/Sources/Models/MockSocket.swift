@@ -45,7 +45,7 @@ final class MockSocket {
     func connect(with senders: [MockUser]) -> Self {
         disconnect()
         connectedUsers = senders
-        timer = Timer.scheduledTimer(timeInterval: 2.5, target: self, selector: #selector(handleTimer), userInfo: nil, repeats: true)
+        timer = Timer.scheduledTimer(timeInterval: 100, target: self, selector: #selector(handleTimer), userInfo: nil, repeats: true)
         return self
     }
     

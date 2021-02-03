@@ -91,25 +91,37 @@ final class AutocompleteExampleViewController: ChatViewController {
 
         let layout = messagesCollectionView.collectionViewLayout as? MessagesCollectionViewFlowLayout
         layout?.sectionInset = UIEdgeInsets(top: 1, left: 8, bottom: 1, right: 8)
-        layout?.setMessageOutgoingAvatarSize(CGSize(width: 30, height: 30))
-        layout?.setMessageOutgoingCellBottomLabelAlignment(.init(textAlignment: .right, textInsets: UIEdgeInsets(top: 10, left: 10, bottom: 10, right: 10)))
+        
+        layout?.setMessageOutgoingAvatarSize(CGSize(width: 44, height: 44))
         layout?.setMessageOutgoingMessagePadding(UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 0))
+        layout?.setMessageOutgoingCellBottomLabelAlignment(.init(textAlignment: .right, textInsets: UIEdgeInsets(top: 0, left: 10, bottom: 10, right: 10)))
+        layout?.setMessageOutgoingCellTopLabelAlignment(LabelAlignment(textAlignment: .center, textInsets: UIEdgeInsets(top: 24, left: 0, bottom: 0, right: 0)))
+        layout?.setMessageOutgoingMessageTopLabelAlignment(LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 52)))
+        layout?.setMessageOutgoingMessageBottomLabelAlignment(LabelAlignment(textAlignment: .right, textInsets: UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 52)))
+        layout?.setMessageIncomingMessageTopLabelAlignment(LabelAlignment(textAlignment: .left, textInsets: UIEdgeInsets(top: 0, left: 52, bottom: 0, right: 0)))
+        layout?.setMessageIncomingCellTopLabelAlignment(LabelAlignment(textAlignment: .center, textInsets: UIEdgeInsets(top: 24, left: 0, bottom: 0, right: 0)))
+
+        layout?.setMessageIncomingAvatarSize(CGSize(width: 44, height: 44))
         layout?.setAvatarLeadingTrailingPadding(0)
+
+//        layout?.setMessageIncomingMessagePadding(UIEdgeInsets(top: 10, left: 0, bottom: 0, right: 0))
         messagesCollectionView.messagesLayoutDelegate = self
         messagesCollectionView.messagesDisplayDelegate = self
-
+        messagesCollectionView.backgroundColor = .black
         additionalBottomInset = 30
     }
 
     override func configureMessageInputBar() {
         super.configureMessageInputBar()
-        messageInputBar.layer.shadowColor = UIColor.black.cgColor
-        messageInputBar.layer.shadowRadius = 4
-        messageInputBar.layer.shadowOpacity = 0.3
-        messageInputBar.layer.shadowOffset = CGSize(width: 0, height: 0)
-        messageInputBar.separatorLine.isHidden = true
-        messageInputBar.setRightStackViewWidthConstant(to: 0, animated: false)
-        messageInputBar.setMiddleContentView(joinChatButton, animated: false)
+        configureMessageInputBarForChat()
+//        messageInputBar.backgroundColor = .black
+//        messageInputBar.layer.shadowColor = UIColor.black.cgColor
+//        messageInputBar.layer.shadowRadius = 4
+//        messageInputBar.layer.shadowOpacity = 0.3
+//        messageInputBar.layer.shadowOffset = CGSize(width: 0, height: 0)
+//        messageInputBar.separatorLine.isHidden = true
+//        messageInputBar.setRightStackViewWidthConstant(to: 0, animated: false)
+//        messageInputBar.setMiddleContentView(joinChatButton, animated: false)
     }
 
     private func configureMessageInputBarForChat() {
@@ -117,10 +129,15 @@ final class AutocompleteExampleViewController: ChatViewController {
         messageInputBar.setRightStackViewWidthConstant(to: 52, animated: false)
 //        let bottomItems = [makeButton(named: "ic_at"), makeButton(named: "ic_hashtag"), .flexibleSpace]
 //        messageInputBar.setStackViewItems(bottomItems, forStack: .bottom, animated: false)
-
+        messageInputBar.backgroundView.backgroundColor = .black
+        messageInputBar.contentView.backgroundColor = .black
+        messageInputBar.middleContentView?.backgroundColor = UIColor.incomingChatColor
+        messageInputBar.middleContentView?.layer.cornerRadius = 15
+        
         messageInputBar.sendButton.activityViewColor = .white
-        messageInputBar.sendButton.backgroundColor = .primaryColor
-        messageInputBar.sendButton.layer.cornerRadius = 10
+        messageInputBar.sendButton.backgroundColor = UIColor.primaryColor
+        
+//        view.layoutIfNeeded()
         messageInputBar.sendButton.setTitleColor(.white, for: .normal)
         messageInputBar.sendButton.setTitleColor(UIColor(white: 1, alpha: 0.3), for: .highlighted)
         messageInputBar.sendButton.setTitleColor(UIColor(white: 1, alpha: 0.3), for: .disabled)
@@ -132,6 +149,10 @@ final class AutocompleteExampleViewController: ChatViewController {
         }
     }
 
+    override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        messageInputBar.sendButton.layer.cornerRadius = messageInputBar.sendButton.frame.size.height / 2
+    }
     @objc
     func joinChat() {
         configureMessageInputBarForChat()
@@ -140,7 +161,7 @@ final class AutocompleteExampleViewController: ChatViewController {
     // MARK: - Helpers
 
     func isTimeLabelVisible(at indexPath: IndexPath) -> Bool {
-        return indexPath.section % 3 == 0 && !isPreviousMessageSameSender(at: indexPath)
+        return !isPreviousMessageSameSender(at: indexPath)
     }
 
     func isPreviousMessageSameSender(at indexPath: IndexPath) -> Bool {
@@ -181,7 +202,7 @@ final class AutocompleteExampleViewController: ChatViewController {
 
     override func cellTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
         if isTimeLabelVisible(at: indexPath) {
-            return NSAttributedString(string: MessageKitDateFormatter.shared.string(from: message.sentDate), attributes: [NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 10), NSAttributedString.Key.foregroundColor: UIColor.darkGray])
+            return NSAttributedString(string: message.sentDate.agoFormat() ?? "", attributes: [NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 10), NSAttributedString.Key.foregroundColor: UIColor.dateColor])
         }
         return nil
     }
@@ -189,15 +210,16 @@ final class AutocompleteExampleViewController: ChatViewController {
     override func messageTopLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
         if !isPreviousMessageSameSender(at: indexPath) {
             let name = message.sender.displayName
-            return NSAttributedString(string: name, attributes: [NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .caption1)])
+            return NSAttributedString(string: name,
+                                      attributes: [NSAttributedString.Key.foregroundColor: UIColor.white,
+                                                   NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 14)])
         }
         return nil
     }
 
     override func messageBottomLabelAttributedText(for message: MessageType, at indexPath: IndexPath) -> NSAttributedString? {
-
         if !isNextMessageSameSender(at: indexPath) && isFromCurrentSender(message: message) {
-            return NSAttributedString(string: "Delivered", attributes: [NSAttributedString.Key.font: UIFont.preferredFont(forTextStyle: .caption1)])
+            return NSAttributedString(string: "Delivered", attributes: [NSAttributedString.Key.font: UIFont.boldSystemFont(ofSize: 10), NSAttributedString.Key.foregroundColor: UIColor.dateColor])
         }
         return nil
     }
@@ -240,10 +262,11 @@ extension AutocompleteExampleViewController: AutocompleteManagerDelegate, Autoco
     }
 
     func autocompleteManager(_ manager: AutocompleteManager, tableView: UITableView, cellForRowAt indexPath: IndexPath, for session: AutocompleteSession) -> UITableViewCell {
-
+        
         guard let cell = tableView.dequeueReusableCell(withIdentifier: AutocompleteCell.reuseIdentifier, for: indexPath) as? AutocompleteCell else {
             fatalError("Oops, some unknown error occurred")
         }
+        tableView.backgroundColor = .black
         let users = SampleData.shared.senders
         let id = session.completion?.context?["id"] as? String
         let user = users.filter { return $0.senderId == id }.first
@@ -251,11 +274,13 @@ extension AutocompleteExampleViewController: AutocompleteManagerDelegate, Autoco
             cell.imageView?.image = SampleData.shared.getAvatarFor(sender: sender).image
         }
         cell.imageViewEdgeInsets = UIEdgeInsets(top: 8, left: 8, bottom: 8, right: 8)
+        cell.backgroundColor = .black
         cell.imageView?.layer.cornerRadius = 14
-        cell.imageView?.layer.borderColor = UIColor.primaryColor.cgColor
-        cell.imageView?.layer.borderWidth = 1
+//        cell.imageView?.layer.borderColor = UIColor.primaryColor.cgColor
+//        cell.imageView?.layer.borderWidth = 1
         cell.imageView?.clipsToBounds = true
         cell.textLabel?.attributedText = manager.attributedText(matching: session, fontSize: 15)
+        cell.textLabel?.textColor = UIColor.white
         return cell
     }
 
@@ -302,7 +327,7 @@ extension AutocompleteExampleViewController: MessagesDisplayDelegate {
     // MARK: - Text Messages
 
     func textColor(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
-        return isFromCurrentSender(message: message) ? .white : .darkText
+        return isFromCurrentSender(message: message) ? .white : .white
     }
 
     func detectorAttributes(for detector: DetectorType, and message: MessageType, at indexPath: IndexPath) -> [NSAttributedString.Key: Any] {
@@ -324,7 +349,8 @@ extension AutocompleteExampleViewController: MessagesDisplayDelegate {
     // MARK: - All Messages
 
     func backgroundColor(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> UIColor {
-        return isFromCurrentSender(message: message) ? .primaryColor : UIColor(red: 230/255, green: 230/255, blue: 230/255, alpha: 1)
+        messagesCollectionView.cellForItem(at: indexPath)?.backgroundColor = .black
+        return isFromCurrentSender(message: message) ? UIColor.primaryColor : UIColor.incomingChatColor
     }
 
     func messageStyle(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> MessageStyle {
@@ -364,8 +390,8 @@ extension AutocompleteExampleViewController: MessagesDisplayDelegate {
         let avatar = SampleData.shared.getAvatarFor(sender: message.sender)
         avatarView.set(avatar: avatar)
         avatarView.isHidden = isNextMessageSameSender(at: indexPath)
-        avatarView.layer.borderWidth = 2
-        avatarView.layer.borderColor = UIColor.primaryColor.cgColor
+//        avatarView.layer.borderWidth = 2
+//        avatarView.layer.borderColor = UIColor.primaryColor.cgColor
     }
 
     func configureAccessoryView(_ accessoryView: UIView, for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) {
@@ -397,7 +423,7 @@ extension AutocompleteExampleViewController: MessagesLayoutDelegate {
 
     func cellTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CGFloat {
         if isTimeLabelVisible(at: indexPath) {
-            return 18
+            return 40
         }
         return 0
     }
@@ -411,7 +437,120 @@ extension AutocompleteExampleViewController: MessagesLayoutDelegate {
     }
 
     func messageBottomLabelHeight(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CGFloat {
-        return (!isNextMessageSameSender(at: indexPath) && isFromCurrentSender(message: message)) ? 16 : 0
+        return (!isNextMessageSameSender(at: indexPath)) ? 16 : 0
+    }
+
+}
+
+
+extension Date {
+
+    func toString(with format: String = "yyyy-MM-dd'T'HH:mm:ssZ") -> String? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.dateFormat = format
+        dateFormatter.timeZone  = .current
+        return dateFormatter.string(from: self)
+    }
+
+    func toUTC() -> Date {
+     let dateFormatter = DateFormatter()
+     dateFormatter.timeZone = TimeZone(abbreviation: "UTC")
+        let format = "yyyy-MM-dd'T'HH:mm:ssZ"
+     dateFormatter.dateFormat = format
+     let dateString = dateFormatter.string(from: self)
+        return dateString.toDate(format: format)!
+    }
+    
+    func agoFormat() -> String? {
+        let calendar = Calendar.current
+        let unitFlags: Set<Calendar.Component> = [.minute, .hour, .day, .weekOfMonth, .month, .year, .second]
+        let components: DateComponents = calendar.dateComponents(unitFlags, from: self.toUTC(), to: Date().toUTC())
+
+        var weeksTotal = 0
+
+        if let year = components.year {
+            weeksTotal = year * 52
+        }
+
+        if let month = components.month {
+            weeksTotal += month * 4
+        }
+
+        if let week = components.weekOfMonth {
+            if weeksTotal > 0 {
+                return "\(week + weeksTotal) weeks ago"
+            }
+            if week >= 2 {
+                return "\(week) weeks ago"
+            } else if week >= 1 {
+                return "Last week"
+            }
+        }
+
+        if let day = components.day {
+            if day >= 2 {
+                return "\(day) days ago"
+            } else if day >= 1 {
+                return "Yesterday"
+            }
+        }
+
+        if let hour = components.hour {
+            if hour >= 2 {
+                return "\(hour) hours ago"
+            } else if hour >= 1 {
+                return "An hour ago"
+            }
+        }
+
+        if let minute = components.minute {
+            if minute >= 15 {
+                return "\(minute) minutes ago"
+            } else if minute >= 2 {
+                return "A few minutes ago"
+            }
+        }
+
+        return "Just now"
+    }
+
+}
+
+
+extension String {
+    var toInt: Int {
+        return Int(self) ?? Int.max
+    }
+
+    var toDouble: Double {
+        return Double(self) ?? Double.nan
+    }
+
+    var toFloat: Float {
+        return Float(toDouble)
+    }
+
+    var toCGFloat: CGFloat {
+        return CGFloat(toDouble)
+    }
+
+    var toBool: Bool? {
+        return Bool(self)
+    }
+
+    var toAnyObject: AnyObject? {
+        return self as? AnyObject
+    }
+
+    func toDate(format: String = "yyyy-MM-dd'T'HH:mm:ssZ") -> Date? {
+        let dateFormatter = DateFormatter()
+        dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+        dateFormatter.dateFormat = format
+        guard let date = dateFormatter.date(from: self) else {
+            let correctStr = self.replacingOccurrences(of: ".", with: "+").replacingOccurrences(of: "Z", with: "0")
+            return dateFormatter.date(from: correctStr)
+        }
+        return date
     }
 
 }

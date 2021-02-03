@@ -42,7 +42,8 @@ final class AdvancedExampleViewController: ChatViewController {
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        
+        messagesCollectionView.backgroundColor = .blue
+        view.backgroundColor = .yellow
         MockSocket.shared.connect(with: [SampleData.shared.nathan, SampleData.shared.wu])
             .onTypingStatus { [weak self] in
                 self?.setTypingIndicatorViewHidden(false)
@@ -419,7 +420,7 @@ extension AdvancedExampleViewController: MessagesDisplayDelegate {
 
 extension AdvancedExampleViewController: MessagesLayoutDelegate {
 //    func customCellSizeCalculator(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CellSizeCalculator {
-//        <#code#>
+//        
 //    }
     func cellTopLabelHeight(for message: MessageType, at indexPath: IndexPath, in messagesCollectionView: MessagesCollectionView) -> CGFloat {
         if isTimeLabelVisible(at: indexPath) {

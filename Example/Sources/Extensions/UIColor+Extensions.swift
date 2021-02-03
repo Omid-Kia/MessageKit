@@ -25,5 +25,7 @@
 import UIKit
 
 extension UIColor {
-    static let primaryColor = UIColor(red: 69/255, green: 193/255, blue: 89/255, alpha: 1)
+    static let primaryColor = UIColor(red: 7/255, green: 128/255, blue: 222/255, alpha: 1)
+    static let dateColor = UIColor(red: 254/255, green: 255/255, blue: 254/255, alpha: 0.6)
+    static let incomingChatColor = UIColor(red: 28/255, green: 28/255, blue: 30/255, alpha: 1)
 }

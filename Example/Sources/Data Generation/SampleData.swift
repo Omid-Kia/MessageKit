@@ -68,7 +68,7 @@ final internal class SampleData {
         return steven
     }
 
-    var now = Date()
+    var now = Date(timeIntervalSince1970: 1612144391)
     
     let messageImages: [UIImage] = [#imageLiteral(resourceName: "img1"), #imageLiteral(resourceName: "img2")]
     let messageImageURLs: [URL] = [URL(string: "https://placekitten.com/g/200/300")!,

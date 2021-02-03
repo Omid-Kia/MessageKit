@@ -77,6 +77,8 @@ open class CustomCell: MessageContentCell {
             messageLabel.textInsets = attributes.messageLabelInsets
 //            messageLabel.messageLabelFont = attributes.messageLabelFont
             messageLabel.frame = messageContainerView.bounds
+//            contentView.backgroundColor = .red
+            backgroundColor = .red
         }
     }
     open override func layoutCellTopLabel(with attributes: MessagesCollectionViewLayoutAttributes) {
